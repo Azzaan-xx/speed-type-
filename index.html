@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Type — practice typing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #1F2A44;
+    --paper: #F1EEE6;
+    --carbon: #22201D;
+    --ribbon: #B8443C;
+    --ribbon-dim: rgba(184,68,60,0.18);
+    --ink-dim: rgba(31,42,68,0.14);
+    --muted: #8B8578;
+    --line: #3A3733;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--carbon);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.035), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,255,255,0.025), transparent 40%),
+      linear-gradient(180deg, rgba(255,255,255,0.02), transparent 12%);
+    color: var(--paper);
+    font-family: 'IBM Plex Sans', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 16px;
+    position: relative;
+  }
+
+  .credit{
+    position: fixed;
+    right: 18px;
+    bottom: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.85;
+    transition: opacity 0.15s ease;
+  }
+  .credit:hover{ opacity: 1; }
+  .credit svg{ width: 13px; height: 13px; opacity: 0.9; }
+  .credit a{ color: var(--paper); text-decoration: none; border-bottom: 1px solid rgba(241,238,230,0.3); }
+  .credit a:hover{ border-bottom-color: var(--paper); }
+
+  .machine{
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom: 18px;
+    padding: 0 4px;
+  }
+
+  .masthead h1{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin:0;
+    color: var(--paper);
+  }
+
+  .masthead h1 span{ color: var(--ribbon); }
+
+  .masthead .tagline{
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .sheet{
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 44px 40px 34px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 1px 2px rgba(0,0,0,0.4),
+      0 40px 80px -30px rgba(0,0,0,0.65);
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .sheet::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--ribbon), var(--ink) 60%, var(--ribbon));
+    opacity:0.55;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .counters{
+    display:flex;
+    gap: 28px;
+    margin-bottom: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .counter .num{
+    font-size: 2rem;
+    font-weight: 600;
+    line-height:1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .counter .label{
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .passage{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.35rem;
+    line-height: 1.9;
+    letter-spacing: 0.01em;
+    user-select: none;
+    min-height: 5.7em;
+  }
+
+  .passage .char{
+    position: relative;
+    border-bottom: 2px solid transparent;
+  }
+  .passage .char.correct{ color: var(--ink); background: var(--ink-dim); }
+  .passage .char.incorrect{ color: var(--ribbon); background: var(--ribbon-dim); text-decoration: underline; text-decoration-color: var(--ribbon); }
+  .passage .char.current{ border-bottom-color: var(--ribbon); }
+  .passage .char.pending{ color: rgba(31,42,68,0.42); }
+
+  .hidden-input{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .status-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px dashed rgba(31,42,68,0.25);
+  }
+
+  .status-text{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  button{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 6px 14px -8px rgba(31,42,68,0.5);
+    transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  button:hover{ background: #14203a; box-shadow: 0 2px 4px rgba(0,0,0,0.18), 0 10px 20px -10px rgba(31,42,68,0.6); }
+  button:active{ transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  button:focus-visible{ outline: 2px solid var(--ribbon); outline-offset: 2px; }
+
+  .result{
+    display:none;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .result.show{ display:block; }
+  .result .big{
+    font-size: 3rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .result .big-label{
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .result-grid{
+    display:flex;
+    gap: 36px;
+    margin: 22px 0 26px;
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip: rect(0 0 0 0); white-space:nowrap;
+  }
+
+  @media (max-width: 560px){
+    .sheet{ padding: 28px 20px 24px; }
+    .passage{ font-size: 1.1rem; line-height: 1.85; }
+    .counters{ gap:18px; }
+    .result .big{ font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="machine">
+  <div class="masthead">
+    <h1>Speed<span>Type</span></h1>
+    <div class="tagline">no. 01 — practice edition</div>
+  </div>
+
+  <div class="sheet">
+
+    <!-- Live typing view -->
+    <div id="typingView">
+      <div class="counters">
+        <div class="counter">
+          <div class="num" id="wpmNow">0</div>
+          <div class="label">WPM</div>
+        </div>
+        <div class="counter">
+          <div class="num" id="accNow">100%</div>
+          <div class="label">Accuracy</div>
+        </div>
+        <div class="counter">
+          <div class="num" id="timeNow">0.0s</div>
+          <div class="label">Time</div>
+        </div>
+      </div>
+
+      <div class="passage" id="passage" tabindex="0" aria-label="Typing passage, click to focus and start typing"></div>
+      <input type="text" class="hidden-input" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-hidden="true">
+
+      <div class="status-row">
+        <div class="status-text" id="statusText">Click the text and start typing to begin.</div>
+        <button id="newTextBtn" type="button">New text</button>
+      </div>
+    </div>
+
+    <!-- Result view -->
+    <div class="result" id="resultView">
+      <div class="big" id="resultWpm">0</div>
+      <div class="big-label">Words per minute</div>
+
+      <div class="result-grid">
+        <div class="counter">
+          <div class="num" id="resultAcc">100%</div>
+          <div class="label">Accuracy</div>
+        </div>
+        <div class="counter">
+          <div class="num" id="resultTime">0.0s</div>
+          <div class="label">Time</div>
+        </div>
+        <div class="counter">
+          <div class="num" id="resultErrors">0</div>
+          <div class="label">Mistakes</div>
+        </div>
+      </div>
+
+      <div class="status-row" style="border-top:none; padding-top:0; margin-top:0; justify-content:flex-start; gap:12px;">
+        <button id="retryBtn" type="button">Try again</button>
+        <button id="newAfterResultBtn" type="button">New text</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<span class="sr-only" id="liveRegion" aria-live="polite"></span>
+
+<div class="credit">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+  <a href="https://instagram.com/azaan.66" target="_blank" rel="noopener noreferrer">azaan.66</a>
+</div>
+
+<script>
+(function(){
+  const PASSAGES = [
+    "The quick brown fox jumps over the lazy dog while the autumn leaves fall softly to the ground.",
+    "Typing well is a quiet skill built one small correction at a time, practiced until the hands remember.",
+    "A good cup of coffee and a clear mind can turn an ordinary morning into a surprisingly productive one.",
+    "Somewhere between the first draft and the final version, most ideas become sharper and far more honest.",
+    "Rivers do not rush toward the sea; they simply follow the shape of the land beneath them.",
+    "The best way to learn a new skill is to practice it badly at first and let patience do the rest.",
+    "Old maps rarely show the fastest road, only the one that someone once thought was worth drawing.",
+    "Every keyboard has its own rhythm, and every typist eventually learns to trust their own hands."
+  ];
+
+  const passageEl = document.getElementById('passage');
+  const inputEl = document.getElementById('hiddenInput');
+  const wpmNow = document.getElementById('wpmNow');
+  const accNow = document.getElementById('accNow');
+  const timeNow = document.getElementById('timeNow');
+  const statusText = document.getElementById('statusText');
+  const newTextBtn = document.getElementById('newTextBtn');
+  const typingView = document.getElementById('typingView');
+  const resultView = document.getElementById('resultView');
+  const retryBtn = document.getElementById('retryBtn');
+  const newAfterResultBtn = document.getElementById('newAfterResultBtn');
+  const liveRegion = document.getElementById('liveRegion');
+
+  let currentPassage = "";
+  let typedChars = [];
+  let startTime = null;
+  let timerInterval = null;
+  let totalKeystrokes = 0;
+  let mistakeCount = 0;
+  let finished = false;
+
+  function pickPassage(){
+    const idx = Math.floor(Math.random() * PASSAGES.length);
+    return PASSAGES[idx];
+  }
+
+  function renderPassage(){
+    passageEl.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    currentPassage.split("").forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'char pending';
+      span.textContent = ch;
+      span.dataset.index = i;
+      frag.appendChild(span);
+    });
+    passageEl.appendChild(frag);
+    markCurrent(0);
+  }
+
+  function markCurrent(index){
+    const spans = passageEl.querySelectorAll('.char');
+    spans.forEach(s => s.classList.remove('current'));
+    if(spans[index]) spans[index].classList.add('current');
+  }
+
+  function updateStats(){
+    const elapsedMs = startTime ? (Date.now() - startTime) : 0;
+    const elapsedMin = elapsedMs / 60000;
+    const correctChars = typedChars.filter(c => c.correct).length;
+    const words = correctChars / 5;
+    const wpm = elapsedMin > 0 ? Math.round(words / elapsedMin) : 0;
+    const accuracy = totalKeystrokes > 0
+      ? Math.max(0, Math.round(((totalKeystrokes - mistakeCount) / totalKeystrokes) * 100))
+      : 100;
+
+    wpmNow.textContent = wpm;
+    accNow.textContent = accuracy + '%';
+    timeNow.textContent = (elapsedMs / 1000).toFixed(1) + 's';
+
+    return { wpm, accuracy, elapsedMs };
+  }
+
+  function startTimer(){
+    if(timerInterval) return;
+    startTime = Date.now();
+    timerInterval = setInterval(updateStats, 100);
+  }
+
+  function stopTimer(){
+    if(timerInterval){
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function finishRun(){
+    finished = true;
+    stopTimer();
+    const stats = updateStats();
+
+    document.getElementById('resultWpm').textContent = stats.wpm;
+    document.getElementById('resultAcc').textContent = stats.accuracy + '%';
+    document.getElementById('resultTime').textContent = (stats.elapsedMs / 1000).toFixed(1) + 's';
+    document.getElementById('resultErrors').textContent = mistakeCount;
+
+    typingView.style.display = 'none';
+    resultView.classList.add('show');
+    liveRegion.textContent = 'Finished. ' + stats.wpm + ' words per minute, ' + stats.accuracy + '% accuracy.';
+  }
+
+  function resetRun(newPassage){
+    stopTimer();
+    startTime = null;
+    typedChars = [];
+    totalKeystrokes = 0;
+    mistakeCount = 0;
+    finished = false;
+    inputEl.value = "";
+
+    if(newPassage) currentPassage = pickPassage();
+    renderPassage();
+
+    wpmNow.textContent = '0';
+    accNow.textContent = '100%';
+    timeNow.textContent = '0.0s';
+    statusText.textContent = 'Click the text and start typing to begin.';
+
+    typingView.style.display = 'block';
+    resultView.classList.remove('show');
+
+    passageEl.focus();
+  }
+
+  function handleInput(){
+    if(finished) return;
+    const value = inputEl.value;
+
+    if(value.length > 0 && !startTime){
+      startTime = Date.now();
+      startTimer();
+      statusText.textContent = 'Typing…';
+    }
+
+    // Recompute char states from scratch each time for robustness (handles backspace)
+    typedChars = [];
+    let mistakes = 0;
+    const spans = passageEl.querySelectorAll('.char');
+
+    for(let i = 0; i < currentPassage.length; i++){
+      const span = spans[i];
+      span.classList.remove('correct','incorrect','pending','current');
+      if(i < value.length){
+        const correct = value[i] === currentPassage[i];
+        typedChars.push({ correct });
+        span.classList.add(correct ? 'correct' : 'incorrect');
+        if(!correct) mistakes++;
+      } else {
+        span.classList.add('pending');
+      }
+    }
+    mistakeCount = mistakes;
+    totalKeystrokes = Math.max(totalKeystrokes, value.length);
+    markCurrent(Math.min(value.length, currentPassage.length - 1));
+
+    updateStats();
+
+    if(value.length >= currentPassage.length){
+      finishRun();
+    }
+  }
+
+  passageEl.addEventListener('click', () => inputEl.focus());
+  passageEl.addEventListener('focus', () => inputEl.focus());
+
+  inputEl.addEventListener('input', handleInput);
+
+  newTextBtn.addEventListener('click', () => resetRun(true));
+  retryBtn.addEventListener('click', () => resetRun(false));
+  newAfterResultBtn.addEventListener('click', () => resetRun(true));
+
+  // init
+  currentPassage = pickPassage();
+  resetRun(false);
+})();
+</script>
+
+</body>
+</html>
